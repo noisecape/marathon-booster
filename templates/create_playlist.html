@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Race Playlist - Marathon Music</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1em;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .hint {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            padding: 18px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .presets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9em;
+        }
+
+        .preset-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Race Details</h1>
+        <p class="subtitle">Tell us about your race and we'll build your playlist</p>
+
+        <form action="/generate" method="POST">
+            <div class="form-group">
+                <label for="distance">Race Distance</label>
+                <select id="distance" name="distance" required>
+                    <option value="">Select distance...</option>
+                    <option value="5">5K</option>
+                    <option value="10">10K</option>
+                    <option value="21.1">Half Marathon (21.1K)</option>
+                    <option value="42.2">Marathon (42.2K)</option>
+                    <option value="custom">Custom Distance</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="custom-distance-group" style="display: none;">
+                <label for="custom_distance">Custom Distance (km)</label>
+                <input type="number" id="custom_distance" name="custom_distance" step="0.1" min="1" max="100">
+                <p class="hint">Enter your race distance in kilometers</p>
+            </div>
+
+            <div class="form-group">
+                <label for="goal_time">Goal Time (minutes)</label>
+                <input type="number" id="goal_time" name="goal_time" required min="10" max="500">
+                <p class="hint">How long will the race take? (e.g., 180 for 3 hours)</p>
+            </div>
+
+            <div class="presets">
+                <button type="button" class="preset-btn" onclick="setPreset(42.2, 240)">Marathon - 4h</button>
+                <button type="button" class="preset-btn" onclick="setPreset(42.2, 180)">Marathon - 3h</button>
+                <button type="button" class="preset-btn" onclick="setPreset(21.1, 120)">Half - 2h</button>
+                <button type="button" class="preset-btn" onclick="setPreset(21.1, 90)">Half - 1h30</button>
+            </div>
+
+            <button type="submit" class="submit-btn">Generate My Playlist</button>
+        </form>
+    </div>
+
+    <script>
+        // Show custom distance input when "Custom Distance" is selected
+        document.getElementById('distance').addEventListener('change', function() {
+            const customGroup = document.getElementById('custom-distance-group');
+            if (this.value === 'custom') {
+                customGroup.style.display = 'block';
+            } else {
+                customGroup.style.display = 'none';
+            }
+        });
+
+        // Handle form submission to use custom distance if selected
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const distanceSelect = document.getElementById('distance');
+            if (distanceSelect.value === 'custom') {
+                const customDistance = document.getElementById('custom_distance').value;
+                if (!customDistance) {
+                    e.preventDefault();
+                    alert('Please enter a custom distance');
+                    return;
+                }
+                // Create hidden input with the custom distance
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'distance';
+                hiddenInput.value = customDistance;
+                this.appendChild(hiddenInput);
+            }
+        });
+
+        // Preset buttons for quick setup
+        function setPreset(distance, time) {
+            document.getElementById('distance').value = distance;
+            document.getElementById('goal_time').value = time;
+        }
+    </script>
+</body>
+</html>
