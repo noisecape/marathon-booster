@@ -31,3 +31,6 @@ Thumbs.db
 *.fit
 *.gpx
 strava_export/
+
+# MD files
+*.MD
